@@ -26,21 +26,19 @@ import random
 import sys
 sys.path.append('../dataloaders')
 sys.path.append('../architectures')
-import dataloader_new
-import linear, monai_swin, sfcn
+import dataloader
+import monai_swin, sfcn_mod
 
 #%%
-# 5.Parameters
+# Set Parameters
 
 # Basic parameters
 cohort = 'ukb'
 model_name = 'dense'
 column_name = 'sex'
 task = 'classification'
-csv_train = f'../data/ukb/train/demographics.csv'
-#csv_train = f'../data/ukb/train/mace_after_imaging.csv'
 img_size = 180
-tensor_dir = f'../../images/ukb/npy_ukb{img_size}'
+
 #Training parameters
 batch_size = 4
 num_epochs = 1000
@@ -52,13 +50,16 @@ lr = 1e-05
 seed = 42 
 best_val_loss = 1000
 n_channels = 1
-#transforms = T.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-# Calculate the ratio
+
+# Check class distribution
 df = pd.read_csv(csv_train)
 print(df)
 ratio = (df[column_name] == 1).sum() / (df[column_name] == 0).sum()
 print("Ratio of positive to negative cases:", ratio)
-# logging parameters
+
+# Set Paths
+csv_train = f'../data/ukb/train/demographics.csv'
+tensor_dir = f'../../images/ukb/npy_ukb{img_size}'
 unique_name = f"{column_name}_e{num_epochs}_n{nrows}_b{batch_size}_lr{lr}_s{n_splits}_im{img_size}"
 scores_train = f'../scores/{cohort}/{model_name}/train/{unique_name}'
 scores_val = f'../scores/{cohort}/{model_name}/val/{unique_name}'
@@ -67,12 +68,6 @@ trainlog_dir = f'../logs/trainlog/{model_name}/'
 vallog_dir = f'../logs/vallog/{model_name}/'
 log_dir = f'../logs/aurocs/{model_name}/'
 save_model = f'../models/{model_name}/'
-
-# ssl parameters 
-ssl_batch_size = 8
-ssl_n_epochs = 20
-pretrained_model = f'../logs/ssl/{model_name}/best_model_b{ssl_batch_size}_e{ssl_n_epochs}.pt'
-vitae_pretrained_model = f'../logs/best_model.pt'
 
 # swin parameters
 patch_size = [8, 8, 8]
@@ -92,71 +87,11 @@ if torch.cuda.is_available():
 torch.manual_seed(42)
 random.seed(42)
 np.random.seed(42)
+
 #%%
 #Training dataset
 train_dataset = dataloader_new.BrainDataset(csv_train, tensor_dir, column_name, task='classification', num_classes=n_classes, num_rows = nrows)
-#train_dataset = dataloader.BrainDataset(csv_file = csv_train, root_dir = tensor_dir, column_name = column_name, num_rows = nrows, num_classes = n_classes)
-#%%
-class SFCN(nn.Module):
-    def __init__(self, channel_number=[32, 64, 128, 256, 256, 64], output_dim=2, dropout=True):
-        super(SFCN, self).__init__()
-        n_layer = len(channel_number)
-        self.feature_extractor = nn.Sequential()
-        for i in range(n_layer):
-            if i == 0:
-                in_channel = 1
-            else:
-                in_channel = channel_number[i-1]
-            out_channel = channel_number[i]
-            if i < n_layer-1:
-                self.feature_extractor.add_module('conv_%d' % i,
-                                                  self.conv_layer(in_channel,
-                                                                  out_channel,
-                                                                  maxpool=True,
-                                                                  kernel_size=3,
-                                                                  padding=1))
-            else:
-                self.feature_extractor.add_module('conv_%d' % i,
-                                                  self.conv_layer(in_channel,
-                                                                  out_channel,
-                                                                  maxpool=False,
-                                                                  kernel_size=1,
-                                                                  padding=0))
-        self.classifier = nn.Sequential()
-        avg_shape = [3, 3, 3]
-        self.classifier.add_module('average_pool', nn.AvgPool3d(avg_shape))
-        if dropout is True:
-            self.classifier.add_module('dropout', nn.Dropout(0.5))
-        i = n_layer
-        in_channel = channel_number[-1]
-        out_channel = output_dim
-        self.classifier.add_module('conv_%d' % i,
-                                   nn.Conv3d(in_channel, out_channel, padding=0, kernel_size=1))
 
-    @staticmethod
-    def conv_layer(in_channel, out_channel, maxpool=True, kernel_size=3, padding=0, maxpool_stride=2):
-        if maxpool is True:
-            layer = nn.Sequential(
-                nn.Conv3d(in_channel, out_channel, padding=padding, kernel_size=kernel_size),
-                nn.BatchNorm3d(out_channel),
-                nn.MaxPool3d(2, stride=maxpool_stride),
-                nn.ReLU(),
-            )
-        else:
-            layer = nn.Sequential(
-                nn.Conv3d(in_channel, out_channel, padding=padding, kernel_size=kernel_size),
-                nn.BatchNorm3d(out_channel),
-                nn.ReLU()
-            )
-        return layer
-
-    def forward(self, x):
-        #out = list()
-        x_f = self.feature_extractor(x)
-        x = self.classifier(x_f)
-        x = F.log_softmax(x, dim=1)
-        x = x.mean(dim = [2,3,4])
-        return x
 #%%
 # Training 
 trainlog_file = os.path.join(trainlog_dir, f"{unique_name}.txt")
@@ -198,13 +133,9 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
     val_loader = DataLoader(val_subset, batch_size = batch_size, num_workers=8)
     
     # Set Model
-    #model = Classifier(base, feature_size = feature_size, last_layer = last_layer, num_classes = n_classes).to(dev)
-    #model = SFCN(output_dim=n_classes).to(dev)
-    model = sfcn_new.SFCN(input_size=img_size, output_dim=n_classes, task=task).to(dev)#.load_state_dict(checkpoint['state_dict']).to(dev)
+    model = sfcn_mod.SFCN(output_dim=n_classes, task=task).to(dev)#.load_state_dict(checkpoint['state_dict']).to(dev)
     #model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels= n_channels, out_channels = n_classes).to(dev)
-    #model = monai_vit.ViT(spatial_dims=3, in_channels = 1, img_size=img_size, proj_type = 'conv', patch_size = patch_size, hidden_size = feature_size, num_heads = 4, classification = True, num_classes = 2).to(dev)
     #model = monai_swin.SwinTransformer(in_chans = 1, embed_dim = feature_size, window_size = window_size, patch_size = patch_size, depths = depths, num_heads = num_heads).to(dev)#
-    #model = linear.LinearNN(input_size = 64, output_size = 2).to(dev)
     print(model)
     
     # Set Optimizer and Loss
