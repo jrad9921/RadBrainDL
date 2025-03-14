@@ -99,14 +99,6 @@ for fold in range(1, n_folds + 1):
     mae = mean_absolute_error(test_labels, test_outputs)
     print(f'MAE for fold {fold}: {mae:.4f}')
     
-    # Calculate Pearson's r
-    #pearson_corr, _ = pearsonr(test_labels, test_outputs)
-    #print(f"Pearson's r for fold {fold}: {pearson_corr:.4f}")
-    
-    # Calculate AUROC if desired
-    # auroc = roc_auc_score(test_labels, test_outputs)
-    # print(f'AUROC for fold {fold}: {auroc:.4f}')
-    
     # Save predictions to CSV
     output_csv = f'{output_path}_k{fold}.csv'
     df = pd.DataFrame(data={"eid": test_eids, "label": test_labels, "prediction": test_outputs}) 
