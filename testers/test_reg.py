@@ -66,9 +66,10 @@ seed = 42
 # %%  
 auroc_list = [] 
 for fold in range(1, n_folds + 1):
-    print(f'External validation for fold {fold}')
-    #model = SFCN(output_dim=n_classes).to(dev)        
-    #model = sfcn_reg.SFCN().to(dev)
+    
+    print(f'External validation for fold {fold}')   
+    
+    #model = sfcn_mod.SFCN(output_dim=n_classes, task=task).to(dev)
     #model = monai_swin.SwinTransformer(in_chans = 1, embed_dim = feature_size, window_size = window_size, patch_size = patch_size, depths = depths, num_heads = num_heads, n_classes = n_classes).to(dev)
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels=1, out_channels=n_classes).to(dev)
 
