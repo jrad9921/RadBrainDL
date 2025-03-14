@@ -78,7 +78,7 @@ for fold in range(1, n_folds + 1):
     model.to(dev)
     
     # Define dataset and dataloader
-    test_dataset = dataloader_new.BrainDataset(csv_file=csv_test, root_dir=tensor_dir, column_name=column_name, num_rows=nrows_test, num_classes=n_classes, task = task)  
+    test_dataset = dataloader.BrainDataset(csv_file=csv_test, root_dir=tensor_dir, column_name=column_name, num_rows=nrows_test, num_classes=n_classes, task = task)  
     test_loader = DataLoader(test_dataset, batch_size=b_size, num_workers=8, drop_last=True)
     
     test_outputs = []
