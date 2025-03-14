@@ -28,7 +28,7 @@ import sys
 sys.path.append('../dataloaders')
 sys.path.append('../architectures')
 import dataloader, dataloader_new
-import sfcn, linear, monai_swin, monai_vit
+import sfcn_mod, monai_swin
 
 #%%
 # Parameters
