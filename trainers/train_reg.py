@@ -1,6 +1,6 @@
 
 #%%
-# 0.Imports 
+#Imports 
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -31,16 +31,15 @@ import dataloader, dataloader_new
 import sfcn, linear, monai_swin, monai_vit
 
 #%%
-# 5.Parameters
+# Parameters
+
 # Basic parameters
 cohort = 'ukb'
 model_name = 'dense'
 method_name = 'supervised'
 column_name = 'age'
 task = 'regression'
-csv_train = f'../data/ukb/train/demographics.csv'
 img_size = 180
-tensor_dir = f'../../images/{cohort}/npy_{cohort}{img_size}'
 
 #Training parameters
 batch_size = 4
@@ -54,13 +53,15 @@ lr = 1e-03
 seed = 42 
 best_val_loss = 10000
 
-#transforms = T.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-# Calculate the ratio
+# Check the class distribution
 df = pd.read_csv(csv_train)
 print(df)
 ratio = (df[column_name] == 1).sum() / (df[column_name] == 0).sum()
 print("Ratio of positive to negative cases:", ratio)
-# logging parameters
+
+# Set Paths
+tensor_dir = f'../../images/{cohort}/npy_{cohort}{img_size}'
+csv_train = f'../data/ukb/train/demographics.csv'
 unique_name = f"{column_name}_e{num_epochs}_n{nrows}_b{batch_size}_lr{lr}_s{n_splits}_im{img_size}"
 scores_train = f'../scores/{cohort}/{model_name}/train/{unique_name}'
 scores_val = f'../scores/{cohort}/{model_name}/val/{unique_name}'
@@ -96,70 +97,10 @@ torch.manual_seed(42)
 random.seed(42)
 np.random.seed(42)
 
-#%%
-class SFCN(nn.Module):
-    def __init__(self, channel_number=[32, 64, 128, 256, 256, 64], output_dim=1, dropout=True):
-        super(SFCN, self).__init__()
-        n_layer = len(channel_number)
-        self.feature_extractor = nn.Sequential()
-        for i in range(n_layer):
-            if i == 0:
-                in_channel = 1
-            else:
-                in_channel = channel_number[i-1]
-            out_channel = channel_number[i]
-            if i < n_layer-1:
-                self.feature_extractor.add_module('conv_%d' % i,
-                                                  self.conv_layer(in_channel,
-                                                                  out_channel,
-                                                                  maxpool=True,
-                                                                  kernel_size=3,
-                                                                  padding=1))
-            else:
-                self.feature_extractor.add_module('conv_%d' % i,
-                                                  self.conv_layer(in_channel,
-                                                                  out_channel,
-                                                                  maxpool=False,
-                                                                  kernel_size=1,
-                                                                  padding=0))
-        self.classifier = nn.Sequential()
-        avg_shape = [3, 3, 3]
-        self.classifier.add_module('average_pool', nn.AvgPool3d(avg_shape))
-        if dropout is True:
-            self.classifier.add_module('dropout', nn.Dropout(0.5))
-        i = n_layer
-        in_channel = channel_number[-1]
-        out_channel = output_dim
-        self.classifier.add_module('conv_%d' % i,
-                                   nn.Conv3d(in_channel, out_channel, padding=0, kernel_size=1))
 
-    @staticmethod
-    def conv_layer(in_channel, out_channel, maxpool=True, kernel_size=3, padding=0, maxpool_stride=2):
-        if maxpool is True:
-            layer = nn.Sequential(
-                nn.Conv3d(in_channel, out_channel, padding=padding, kernel_size=kernel_size),
-                nn.BatchNorm3d(out_channel),
-                nn.MaxPool3d(2, stride=maxpool_stride),
-                nn.ReLU(),
-            )
-        else:
-            layer = nn.Sequential(
-                nn.Conv3d(in_channel, out_channel, padding=padding, kernel_size=kernel_size),
-                nn.BatchNorm3d(out_channel),
-                nn.ReLU()
-            )
-        return layer
-
-    def forward(self, x):
-        #out = list()
-        x_f = self.feature_extractor(x)
-        x = self.classifier(x_f)
-        x = x.mean(dim = [2,3,4])
-        x = x.squeeze()
-        return x
 #%%
 #Training dataset
-train_dataset = dataloader_new.BrainDataset(csv_train, tensor_dir, column_name, task='regression', num_rows = nrows)
+train_dataset = dataloader.BrainDataset(csv_train, tensor_dir, column_name, task='regression', num_rows = nrows)
 
 #%%
 # Training loop
