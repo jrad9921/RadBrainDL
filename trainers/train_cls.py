@@ -235,8 +235,6 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
     train_data = {
         #'fold': fold + 1,
         'eid': train_eids,
-        #'gender': train_gender,
-        #'ageclass': train_ageclass,
         'label': train_labels,
         'logits': train_outputs, 
         'prediction': train_outputs_binary,
@@ -245,8 +243,6 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
     val_data = {
         #'fold': [fold + 1],
         'eid': val_eids,
-        #'gender': val_gender,
-        #'ageclass': val_ageclass,
         'label': best_val_labels,
         'logits': best_val_outputs, 
         'prediction': best_val_outputs_binary,
