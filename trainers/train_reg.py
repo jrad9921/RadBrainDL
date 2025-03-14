@@ -72,12 +72,6 @@ log_dir = f'../logs/aurocs/{model_name}/'
 save_model = f'../models/{model_name}/'
 fig_name = f"{unique_name}.png"
 
-# ssl parameters 
-ssl_batch_size = 8
-ssl_n_epochs = 20
-pretrained_model = f'../logs/ssl/{model_name}/best_model_b{ssl_batch_size}_e{ssl_n_epochs}.pt'
-vitae_pretrained_model = f'../logs/best_model.pt'
-
 # swin parameters
 patch_size = [8, 8, 8]
 window_size = [16, 16, 16]
@@ -146,22 +140,19 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
     val_loader = DataLoader(val_subset, batch_size = batch_size, num_workers=8, drop_last = True)
     
     # Set Model
-    #model = Classifier(base, feature_size = feature_size, last_layer = last_layer, num_classes = n_classes).to(dev)
-    #model = SFCN(output_dim=n_classes).to(dev)#.load_state_dict(checkpoint['state_dict']).to(dev)
+    #model = sfcn_mod.SFCN(input_size=img_size, output_dim=n_classes, task=task).to(dev)
     model = monai.networks.nets.DenseNet121(spatial_dims=3, in_channels= n_channels, out_channels = n_classes).to(dev)
-    #model = monai_vit.ViT(spatial_dims=3, in_channels = 1, img_size=img_size, proj_type = 'conv', patch_size = patch_size, hidden_size = feature_size, num_heads = 4, classification = True, num_classes = 2).to(dev)
     #model = monai_swin.SwinTransformer(in_chans = 1, embed_dim = feature_size, window_size = window_size, patch_size = patch_size, depths = depths, num_heads = num_heads, n_classes = n_classes).to(dev)#
-    #model = linear.LinearNN(input_size = 64, output_size = 2).to(dev)
     
     # Set Optimizer and Loss
-     # Adjusted initialization without class weights
-    criterion = torch.nn.MSELoss().to(dev)  # Example: Using Mean Squared Error for regression
+    criterion = torch.nn.MSELoss().to(dev) 
     #Define the optimizer with initial learning rate
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
 
     print(model)
+    
     # Define the learning rate scheduler
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.3)
 
     for epoch in range(num_epochs):
 
@@ -235,10 +226,10 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
             break
         
         # Update the learning rate
-        scheduler.step()
+        #scheduler.step()
         # Optionally, print the current learning rate
-        current_lr = optimizer.param_groups[0]['lr']
-        print(f'Current Learning Rate: {current_lr}')
+        #current_lr = optimizer.param_groups[0]['lr']
+        #print(f'Current Learning Rate: {current_lr}')
         
         trainlog_file = os.path.join(trainlog_dir, f"{unique_name}.txt")
         with open(trainlog_file, "a") as log:
@@ -249,21 +240,15 @@ for fold, (train_ids, val_ids) in enumerate(skf.split(np.arange(len(train_datase
     train_data = {
         #'fold': fold + 1,
         'eid': train_eids,
-        #'sex': train_gender,
-        #'ageclass': train_ageclass,
         'label': train_labels,
         'logits': train_outputs, 
-        #'prediction': train_outputs_binary,
         }
         
     val_data = {
         #'fold': [fold + 1],
         'eid': val_eids,
-        #'sex': val_gender,
-        #'ageclass': val_ageclass,
         'label': best_val_labels,
         'logits': best_val_outputs, 
-        #'prediction': best_val_outputs_binary,
         }
     
     # Log Predictions into csvs
