@@ -6,7 +6,8 @@ The images for each cohort should be in standard dimensions of (180, 180, 180) v
 The data for each cohort should be in standard format with eid and column_name tables. 
 
 ## Project Structure
-'''
+
+```bash
 ├── main/                     # This is where the training and testing happens using images and labels
 │   ├── trainers/
 │   │   ├── train_cls.py      # Training script for sex classification
@@ -21,6 +22,6 @@ The data for each cohort should be in standard format with eid and column_name t
 │   └── README.md  
 ├── images/                  # This is where the 3D images (as npy files) for each cohort are stored 
 └── data/                    # This is where the data tables (as csv files) for each cohort are stored 
-'''
+```
 
 
