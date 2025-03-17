@@ -2,7 +2,7 @@
 
 This repository contains code for training and testing 3D deep learning models for extracting neuroimaging representations, 
 and can be used for several classification and regression tasks, for example age prediction and sex classification.
-The images for each cohort should be in standard dimensions of (180, 180, 180) voxels preprocessed after registration to MNI space, and brain extraction. 
+The images for each cohort should be in standard dimensions of (180, 180, 180) voxels after registration to MNI space, and brain extraction. 
 The data for each cohort should be in standard format with eid and column_name tables. 
 
 ## Project Structure
@@ -25,3 +25,8 @@ The data for each cohort should be in standard format with eid and column_name t
 ```
 
 
+## Architectures
+3D architectures used:
+1. SFCN from Peng et al, modified to 
+2. Monai's 3D implementation of Densenet121
+3. Monai's 3D implementation of SwinTransformer
