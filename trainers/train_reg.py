@@ -53,12 +53,6 @@ lr = 1e-03
 seed = 42 
 best_val_loss = 10000
 
-# Check the class distribution
-df = pd.read_csv(csv_train)
-print(df)
-ratio = (df[column_name] == 1).sum() / (df[column_name] == 0).sum()
-print("Ratio of positive to negative cases:", ratio)
-
 # Set Paths
 tensor_dir = f'../../images/{cohort}/npy_{cohort}{img_size}'
 csv_train = f'../data/ukb/train/demographics.csv'
