@@ -49,23 +49,9 @@ output_path = f'../scores/{cohort}/{model_name}/{ttype}/{unique_name}'
 model_path = f'../models/{model_name}/{column_name}_e{num_epochs}_n{nrows}_b{batch_size}_lr{lr}_s{n_splits}_im{img_size}'
 log_path = f'../logs/aurocs/{cohort}/{model_name}/{ttype}'
 
-#Check class distribution
+#Check table
 data = pd.read_csv(csv_test, dtype={'eid': str}, delimiter = ',')
 print(data)
-# Check the 'labels' column for positive and negative values
-#Assuming 1.0 is positive and 0.0 is negative
-positive_count = (data[column_name] == 1.0).sum()
-negative_count = (data[column_name] == 0.0).sum()
-# Calculate the positive-to-negative ratio
-if negative_count > 0:
-    pos_neg_ratio = positive_count / negative_count
-else:
-    pos_neg_ratio = float('inf')  # Avoid division by zero
-print(f"Positive count: {positive_count}")
-print(f"Negative count: {negative_count}")
-print(f"Positive-to-negative ratio: {pos_neg_ratio:.2f}")
-
-
 
 #Swin Parameters
 patch_size = [8, 8, 8]
