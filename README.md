@@ -30,3 +30,8 @@ The data for each cohort should be in standard format with eid and column_name t
 1. SFCN from Peng et al, modified to 
 2. Monai's 3D implementation of Densenet121
 3. Monai's 3D implementation of SwinTransformer
+
+
+## Directories
+Create directories of models, logs and scores inside main. 
+Create directories of images and data outside the main.
