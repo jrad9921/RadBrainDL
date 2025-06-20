@@ -27,7 +27,7 @@ The data for each cohort should be in standard format with eid and column_name t
 
 ## Architectures
 3D architectures used:
-1. SFCN from Peng et al, modified to 
+1. SFCN from Peng et al, modified to suit image structure
 2. Monai's 3D implementation of Densenet121
 3. Monai's 3D implementation of SwinTransformer
 
