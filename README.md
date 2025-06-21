@@ -8,6 +8,7 @@ The data for each cohort should be in standard format with eid and column_name t
 ## Project Structure
 
 ```bash
+project/
 ├── main/                     # This is where the training and testing happens using images and labels
 │   ├── trainers/
 │   │   ├── train_cls.py      # Training script for sex classification
