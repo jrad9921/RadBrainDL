@@ -11,18 +11,22 @@ The data for each cohort should be in standard format with eid and column_name t
 project/
 ├── main/                     # This is where the training and testing happens using images and labels
 │   ├── trainers/
-│   │   ├── train_cls.py      # Training script for sex classification
-│   │   └── train_reg.py      # Training script for age prediction
+│   │   ├── train_cls.py      # Training script for classification
+│   │   └── train_reg.py      # Training script for regression
 │   ├── testers/
-│   │   ├── test_cls.py       # Testing script for sex classification
-│   │   └── test_reg.py       # Testing script for age prediction
+│   │   ├── test_cls.py       # Testing script for classification
+│   │   └── test_reg.py       # Testing script for regression
 │   ├── dataloaders/
 │   │   └── dataloader.py     # Dataloader for both tasks
 │   ├── architectures/
 │   │   └── sfcn_mod.py       # Add architectures to train
 │   └── README.md  
-├── images/                  # This is where the 3D images (as npy files) for each cohort are stored 
-└── data/                    # This is where the data tables (as csv files) for each cohort are stored 
+├── images/                  # This is where the 3D images (as npy files) for each cohort are stored  
+├── data/                    # This is where the data tables (as csv files) for each cohort are stored
+├── models/
+├── logs/
+└── image_processing/... 
+
 ```
 
 
